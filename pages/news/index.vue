@@ -6,7 +6,7 @@
     <b-container class="p-0">
       <b-row v-for="news of paginatedNews" :key="news.id" no-gutters class="mt-4">
         <b-col>
-          <b-card type="button" :title="news.title" :class="{'border-primary': news.id === hoveredNews}" @mouseover.stop="mouseoverNews(news.id)" @mouseleave="mouseleaveNews(news.id)" @click.prevent="openNews(news.id)">
+          <b-card type="button" :title="news.title" :class="{ 'border-primary': news.id === hoveredNews }" @mouseover.stop="mouseoverNews(news.id)" @mouseleave="mouseleaveNews(news.id)" @click.prevent="openNews(news.id)">
             <b-card-text>
 
             </b-card-text>
@@ -36,14 +36,14 @@
 export default {
   async asyncData({ $axios }) {
     const newsId = await $axios.$get('https://hacker-news.firebaseio.com/v0/newstories.json');
-
-    newsId.splice(0, 472);
+    newsId.splice(0, 400);
 
     const newsList = [];
-    for (const id of newsId) {
+
+    await Promise.all(newsId.map(async (id) => {
       const newNews = await $axios.$get((`https://hacker-news.firebaseio.com/v0/item/${id}.json`));
       newsList.push(newNews);
-    }
+    }));
 
     return { newsList }
   },
