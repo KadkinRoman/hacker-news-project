@@ -38,11 +38,9 @@ export default {
     const newsId = await $axios.$get('https://hacker-news.firebaseio.com/v0/newstories.json');
     newsId.splice(0, 400);
 
-    const newsList = [];
-
-    await Promise.all(newsId.map(async (id) => {
+    const newsList = await Promise.all(newsId.map(async (id) => {
       const newNews = await $axios.$get((`https://hacker-news.firebaseio.com/v0/item/${id}.json`));
-      newsList.push(newNews);
+      return newNews;
     }));
 
     return { newsList }
