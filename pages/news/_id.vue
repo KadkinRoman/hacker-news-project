@@ -1,7 +1,6 @@
 <template>
   <section>
-    <b-card class="mt-4" :title="news.title"
-      :sub-title="(`${news.score} point by ${news.by} ${new Date(news.time * 1000)}`)">
+    <b-card class="mt-4" :title="news.title" :sub-title="subTitle">
     </b-card>
     <hr>
     <h3>Комментарии</h3>
@@ -22,23 +21,20 @@ export default {
   },
   async asyncData({ $axios, params }) {
     const news = await $axios.$get(`https://hacker-news.firebaseio.com/v0/item/${params.id}.json`);
-    const newsKids = news.kids;
+    const newsKids = news.kids || [];
 
     const comments = [];
     newsKids.forEach(async (comment) => {
-      comments.push(await $axios.$get(`https://hacker-news.firebaseio.com/v0/item/${comment}.json`));
+      const newComment = await $axios.$get(`https://hacker-news.firebaseio.com/v0/item/${comment}.json`);
+      comments.push(newComment);
     });
 
     return { news, comments }
   },
-  data() {
-    return {
-      news: [],
-    }
-  },
-  methods: {
-    async getComment({ $axios, comment }) {
-      return await $axios.$get(`https://hacker-news.firebaseio.com/v0/item/${comment}.json`)
+  computed: {
+    subTitle() {
+      const subTitleBody = `${this.news.score} point by ${this.news.by} ${new Date(this.news.time * 1000)}`
+      return subTitleBody;
     }
   }
 }

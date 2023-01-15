@@ -6,9 +6,7 @@
     <b-container class="p-0">
       <b-row v-for="news of paginatedNews" :key="news.id" no-gutters class="mt-4">
         <b-col>
-          <!--Не сделать выделение одной карточки с помощью v-b-hover-->
-          <b-card type="button" @mouseover.stop="mouseoverNews($event)" @mouseleave="mouseleaveNews($event)"
-            :title="news.title" @click.prevent="openNews(news.id)">
+          <b-card type="button" :title="news.title" :class="{'border-primary': news.id === hoveredNews}" @mouseover.stop="mouseoverNews(news.id)" @mouseleave="mouseleaveNews(news.id)" @click.prevent="openNews(news.id)">
             <b-card-text>
 
             </b-card-text>
@@ -26,9 +24,8 @@
       </b-row>
     </b-container>
 
-    <b-pagination v-model="currentPage" :per-page="perPage" :total-rows="newsList.length" align="fill"
-      class="mt-2"></b-pagination>
-    <b-button @click="updateNewsList" class="mt-4" variant="outline-primary">Обновить</b-button>
+    <b-pagination v-model="currentPage" :per-page="perPage" :total-rows="newsList.length" align="fill" class="mt-2"></b-pagination>
+    <b-button class="mt-4" variant="outline-primary" @click="updateNewsList">Обновить</b-button>
 
   </div>
 </template>
@@ -38,25 +35,24 @@
 
 export default {
   async asyncData({ $axios }) {
-    const newsId = await $axios.$get('https://hacker-news.firebaseio.com/v0/newstories.json?_limit=3s');
+    const newsId = await $axios.$get('https://hacker-news.firebaseio.com/v0/newstories.json');
 
-    newsId.splice(100); // Можно ли сделать ограничение на количество записей через тело запроса?
+    newsId.splice(0, 472);
 
-    const newsList = []
-    newsId.forEach(async (id) => {
-      newsList.push(await $axios.$get((`https://hacker-news.firebaseio.com/v0/item/${id}.json`)));
-    });
+    const newsList = [];
+    for (const id of newsId) {
+      const newNews = await $axios.$get((`https://hacker-news.firebaseio.com/v0/item/${id}.json`));
+      newsList.push(newNews);
+    }
 
     return { newsList }
   },
   data() {
     return {
       newsList: [],
-      perPage: 10,
+      perPage: 4,
       currentPage: 1,
-      isHovered: false,
-      hovered: null,
-      count: 0
+      hoveredNews: null,
     }
   },
   computed: {
@@ -72,11 +68,11 @@ export default {
     openNews(news) {
       this.$router.push('/news/' + news)
     },
-    mouseoverNews(event) {
-      event.currentTarget.classList.add('border-primary');
+    mouseoverNews(newsId) {
+      this.hoveredNews = newsId;
     },
-    mouseleaveNews(event) {
-      event.currentTarget.classList.remove('border-primary');
+    mouseleaveNews(newsId) {
+      this.hoveredNews = null;
     },
     async updateNewsList() {
       await this.$nuxt.refresh();

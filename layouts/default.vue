@@ -10,9 +10,9 @@
 </template>
 
 <script>
-import NavbarItem from '../components/NavbarItem.vue'
+  import NavbarItem from '../components/NavbarItem.vue'
   export default {
-  components: { NavbarItem },
+    components: { NavbarItem },
 
   }
 </script>
